@@ -7,8 +7,8 @@ class Neuron:
         self.b = Tensor(random.uniform(-1, 1))
     
     def forward(self, x):
-        res = [x1 * w1 for x1,w1 in zip(x,self.w)]
-        return sum(res) + self.b
+        res = Tensor(sum([x1 * w1 for x1,w1 in zip(x,self.w)]) + self.b)
+        return res.tanh()
     
     def parameters(self):
         return self.w + [self.b]
@@ -37,3 +37,7 @@ class mlp:
     
     def parameters(self):
         return [p for l in self.layers for p in l.parameters()]
+    
+    def zero_grad(self):
+        for p in self.parameters():
+            p.grad = 0

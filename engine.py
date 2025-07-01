@@ -1,3 +1,6 @@
+import math
+
+
 class Tensor:
     def __init__(self, data, _children=()):
         self.data = data
@@ -31,13 +34,22 @@ class Tensor:
     def __pow__(self, other):
         assert isinstance(other, (int, float))
         o = Tensor(self.data ** other, (self,))
-        o.prev = [self]
 
         def backward():
             self.grad += other * (self.data **(other - 1))
         o._backward = backward
         
-        return o    
+        return o
+    
+    def tanh(self):
+        o = Tensor(math.tanh(self.data),(self,))
+
+        def backward():
+            self.grad += (1 - self.data**2 ) * o.grad
+        
+        o._backward = backward()
+
+        return o
 
     # -- 下方的所有运算都通过上方的基础运算实现 -- #
 
