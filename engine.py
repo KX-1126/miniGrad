@@ -36,7 +36,7 @@ class Tensor:
         o = Tensor(self.data ** other, (self,))
 
         def backward():
-            self.grad += other * (self.data **(other - 1))
+            self.grad += other * (self.data **(other - 1)) * o.grad
         o._backward = backward
         
         return o
@@ -45,9 +45,9 @@ class Tensor:
         o = Tensor(math.tanh(self.data),(self,))
 
         def backward():
-            self.grad += (1 - self.data**2 ) * o.grad
+            self.grad += (1 - math.tanh(self.data)**2 ) * o.grad
         
-        o._backward = backward()
+        o._backward = backward
 
         return o
 
@@ -57,23 +57,23 @@ class Tensor:
         return self * -1
     
     def __sub__(self, other):
-        return self.data + (- other)
+        return self + (- other)
     
     def __radd__(self, other):
-        return other + self.data
+        return self + other
     
     def __rmul__(self, other):
-        return other * self.data
+        return self * other
     
     def __rsub__(self, other):
-        return other + (-self.data)
+        return Tensor(other) - self
     
     # -- 除法运算 通过乘以倒数实现 -- #
     def __truediv__(self, other):
         return self * (other**-1)
     
     def __rtruediv__(self, other):
-        return other * (self**-1)
+        return Tensor(other) / self
 
     def __repr__(self):
         return f"Tensor(data={self.data}, grad={self.grad})"
@@ -90,6 +90,8 @@ class Tensor:
                     build_topo(child)
                 topo.append(v)
         build_topo(self)
+
+        self.grad = 1  # 设置起点的梯度为 1
 
         # 反向拓扑计算
         for tensor in reversed(topo):
